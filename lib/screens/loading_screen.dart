@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:clima/services/location.dart';
-import 'package:http/http.dart';
-import 'dart:convert';
+import 'package:clima/services/networking.dart';
+import 'package:clima/screens/location_screen.dart';
 
 const apiKey = 'ad3f3ad631a917febe0c8858e4cf602f';
 
@@ -17,33 +17,23 @@ class _LoadingScreenState extends State<LoadingScreen> {
   @override
   void initState() {
     super.initState();
-    location();
+    locationData();
   }
 
-  void location() async {
+  void locationData() async {
     Location locate = Location();
     await locate.getlocation();
     latitude = locate.lat;
     logitude = locate.log;
 
-    getData();
-  }
-
-  void getData() async {
-    Response response = await get(
+    NetwokingHelper netwokingHelper = NetwokingHelper(
         'https://api.openweathermap.org/data/2.5/weather?lat=$latitude&lon=$logitude&appid=$apiKey');
-    if (response.statusCode == 200) {
-      String data = response.body;
-      var decodeData = jsonDecode(data);
-      int condition = decodeData['weather'][0]['id'];
-      double temp = decodeData['main']['temp'];
-      String cityName = decodeData['name'];
-      print(condition);
-      print(temp);
-      print(cityName);
-    } else {
-      print(response.statusCode);
-    }
+    var weatherData = await netwokingHelper.getData();
+    Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => LocationScreen(),
+        ));
   }
 
   @override
