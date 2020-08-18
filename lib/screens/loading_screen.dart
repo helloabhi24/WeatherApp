@@ -3,34 +3,44 @@ import 'package:clima/services/location.dart';
 import 'package:http/http.dart';
 import 'dart:convert';
 
+const apiKey = 'ad3f3ad631a917febe0c8858e4cf602f';
+
 class LoadingScreen extends StatefulWidget {
   @override
   _LoadingScreenState createState() => _LoadingScreenState();
 }
 
 class _LoadingScreenState extends State<LoadingScreen> {
+  double latitude;
+  double logitude;
+
   @override
   void initState() {
     super.initState();
-    print("call location");
     location();
-    print("This get data form URL.");
   }
 
   void location() async {
     Location locate = Location();
     await locate.getlocation();
-    print(locate.lat);
-    print(locate.log);
+    latitude = locate.lat;
+    logitude = locate.log;
+
+    getData();
   }
 
   void getData() async {
     Response response = await get(
-        'https://samples.openweathermap.org/data/2.5/weather?q=London,uk&appid=439d4b804bc8187953eb36d2a8c26a02');
+        'https://api.openweathermap.org/data/2.5/weather?lat=$latitude&lon=$logitude&appid=$apiKey');
     if (response.statusCode == 200) {
       String data = response.body;
-      var logi = jsonDecode(data)['coord']['lon'];
-      print(logi);
+      var decodeData = jsonDecode(data);
+      int condition = decodeData['weather'][0]['id'];
+      double temp = decodeData['main']['temp'];
+      String cityName = decodeData['name'];
+      print(condition);
+      print(temp);
+      print(cityName);
     } else {
       print(response.statusCode);
     }
@@ -38,7 +48,6 @@ class _LoadingScreenState extends State<LoadingScreen> {
 
   @override
   Widget build(BuildContext context) {
-    getData();
     return Scaffold();
   }
 }
